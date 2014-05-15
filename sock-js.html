@@ -1,0 +1,48 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<polymer-element name="sock-js" constructor="LoginForm" noscript>
+    <script src="../bower_components/sockjs/sockjs.min.js"></script>
+    <script>
+        Polymer('sock-js', {
+            url: 'http://127.0.0.1:8080/chat',
+
+            ready: function () {
+                this.sock = null;
+
+                this.open_connection();
+            },
+
+            connection_established: function () {
+                console.log('CONNECTION ESTABLISHED');
+            },
+
+            connection_closed: function () {
+                console.log('CONNECTION CLOSED');
+            },
+
+            message_received: function (message) {
+                console.log('RECEIVED: ' + message);
+            },
+
+            open_connection: function () {
+                this.sock = new SockJS(this.url, {
+                    protocols_whitelist: ['websocket']
+                });
+
+                this.sock.onopen = this.connection_established;
+                this.sock.onclose = this.connection_closed;
+                this.register_receiver(this.message_received.bind(this));
+            },
+
+            register_receiver: function (receiver) {
+                this.sock.onmessage = function(e) {
+                    receiver(e.data);
+                };
+            },
+
+            send_message: function (message) {
+                this.sock.send(message);
+            }
+        });
+    </script>
+</polymer-element>
